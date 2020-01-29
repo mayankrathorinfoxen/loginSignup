@@ -9,35 +9,35 @@ const env = process.env.NODE_ENV || 'development';
 const logDir = 'logs';
 
 const tsFormat = () => {
-  return '['+ new Date().toISOString() +']';
+    return '['+ new Date().toISOString() +']';
 };
 
 // Create the log directory if it does not exist
 if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
+    fs.mkdirSync(logDir);
 }
 
 
 const logger = winston.createLogger({
-  transports: [
+    transports: [
     // Colorize the output to the console
-    new (winston.transports.Console)({
-      timestamp: tsFormat,
-      colorize: true,
-      level: 'debug'
-    }),
-    new (require('winston-daily-rotate-file'))({
-      filename: `${logDir}/-results.log`,
-      timestamp: tsFormat,
-      datePattern: 'yyyy-MM-dd',
-      prepend: true,
-      level: env === 'development' ? 'debug' : 'info'
-    }),
-    new (winston.transports.MongoDB)({
-      db: config.logging.dbUri,
-      level: env === 'development' ? 'debug' : 'info'
-    })
-  ]
+        new (winston.transports.Console)({
+            timestamp: tsFormat,
+            colorize: true,
+            level: 'debug'
+        }),
+        new (require('winston-daily-rotate-file'))({
+            filename: `${logDir}/-results.log`,
+            timestamp: tsFormat,
+            datePattern: 'yyyy-MM-dd',
+            prepend: true,
+            level: env === 'development' ? 'debug' : 'info'
+        }),
+        new (winston.transports.MongoDB)({
+            db: config.logging.dbUri,
+            level: env === 'development' ? 'debug' : 'info'
+        })
+    ]
 });
 
 
