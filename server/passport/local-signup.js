@@ -1,6 +1,6 @@
 const User = require('../models/user');
 const PassportLocalStrategy = require('passport-local').Strategy;
-
+const bcrypt = require('bcrypt');
 
 /**
  * Return the Passport Local Strategy object.
@@ -12,19 +12,19 @@ module.exports = new PassportLocalStrategy({
     passReqToCallback: true
 }, async (req, email, password, done) => {
 
-    const userData = {
-        email: email.trim(),
-        password: password.trim(),
-        name: req.body.name.trim()
-    };
-
-    const newUser = new User(userData);
-    try{
+    try {
+        const hashedPassword = await bcrypt.hash(password.trim(), 10);
+        const userData = {
+            email: email.trim(),
+            password: hashedPassword,
+            name: req.body.name.trim()
+        }; 
+        const newUser = new User(userData);
         const result = await newUser.save();
         console.log(result);
         return done(null);
-    }  
+    }
     catch(err) {
-        return done(err);
+        return done(err);   
     }  
 });

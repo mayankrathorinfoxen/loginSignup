@@ -2,12 +2,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const PassportLocalStrategy = require('passport-local').Strategy;
 const config = require('../config/index');
+const bcrypt = require('bcrypt');
 const {
     // ErrorTypes,
     // NotAuthorizedError,
     IncorrectCredentialsError } = require('../main/common/errors');
-
-
+    
 /**
  * Return the Passport Local Strategy object.
  */
@@ -19,19 +19,21 @@ module.exports = new PassportLocalStrategy({
 }, async (req, email, password, done) => {
     const userData = {
         email: email.trim(),
-        password: password.trim()
     };
 
     // Find a user by email address
     try {
         const user = await User.findOne(userData);
         if(!user) {
-            return done(new IncorrectCredentialsError('Incorrect email or password'));
+            return done(new IncorrectCredentialsError('Incorrect email'));
+        }
+        const match = await bcrypt.compare(password.trim(), user.password);
+        if(!match) {
+            return done(new IncorrectCredentialsError('Incorrect password'));    
         }
         const payload = {
             sub: user._id
         };
-      
         // create a token string
         const token = jwt.sign(payload, config.jwtSecret);
         const data = {
@@ -41,7 +43,7 @@ module.exports = new PassportLocalStrategy({
             password: user.password
         };
     
-        return done(null, token, data);
+        return done(null, token, data);        
     }
     catch(err) {
         return done(err);
